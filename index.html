@@ -1,1 +1,348 @@
-ZERO MODE
+<!-- S_HUD_v1.0.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S_HUD v1.0</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --fg-color: #E0E0E0;
+            --dim-color: #444444;
+            --flash-color: #FFFFFF;
+            --border-width: 1px;
+            --font-stack: "Courier New", Courier, "Lucida Sans Typewriter", monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--fg-color);
+            font-family: var(--font-stack);
+            overflow: hidden;
+        }
+
+        /* HUD Grid Layout */
+        .hud-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            width: 100vw;
+            height: 100vh;
+            border: var(--border-width) solid var(--dim-color);
+        }
+
+        .hud-cell {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: var(--border-width) solid var(--dim-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hud-cell:active, .hud-cell.active-flash {
+            border-color: var(--flash-color);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--flash-color);
+        }
+
+        .hud-label {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .hud-sub {
+            font-size: 0.8rem;
+            color: var(--dim-color);
+        }
+
+        /* 2x2 Positioning Adjustments for borders to overlap nicely */
+        .hud-cell:nth-child(1) { border-right: none; border-bottom: none; }
+        .hud-cell:nth-child(2) { border-left: none; border-bottom: none; }
+        .hud-cell:nth-child(3) { border-right: none; border-top: none; }
+        .hud-cell:nth-child(4) { border-left: none; border-top: none; }
+
+        /* Overlays (Common) */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            bottom: 50px;
+            padding: 10px 30px;
+            border: 1px solid var(--dim-color);
+            color: var(--dim-color);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--fg-color);
+            border-color: var(--fg-color);
+        }
+
+        /* 1. Smoking Cooldown Overlay */
+        #timer-display {
+            font-size: 5rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+        }
+
+        /* 2. Anger Breathing Overlay */
+        .breath-circle {
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--fg-color);
+            border-radius: 50%;
+            opacity: 0.8;
+            transform: scale(1);
+        }
+
+        .breath-text {
+            margin-top: 40px;
+            font-size: 1rem;
+            letter-spacing: 3px;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(3); opacity: 1; border-color: var(--flash-color); }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        .breathing-active {
+            animation: breathe 8s infinite ease-in-out; /* 4s in, 4s out approx */
+        }
+
+        /* 3. Log Modal (Simplified) */
+        .log-content {
+            border: 1px solid var(--fg-color);
+            padding: 40px;
+            text-align: center;
+            min-width: 300px;
+        }
+
+        /* 4. Standby Mode */
+        #standby-overlay {
+            background-color: #000000;
+            cursor: pointer;
+        }
+        
+        #standby-text {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #333; /* Very dim */
+            animation: pulse 4s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Main HUD Matrix -->
+    <div class="hud-container">
+        <!-- Top Left: Smoking -->
+        <div class="hud-cell" id="btn-smoke" onclick="triggerEffect(this); activateSmoke()">
+            <div class="hud-label">NICOTINE_PROTOCOL</div>
+            <div class="hud-sub">COOLDOWN 5:00</div>
+        </div>
+        
+        <!-- Top Right: Anger -->
+        <div class="hud-cell" id="btn-anger" onclick="triggerEffect(this); activateAnger()">
+            <div class="hud-label">ANGER_MGMT</div>
+            <div class="hud-sub">BREATH CONTROL</div>
+        </div>
+
+        <!-- Bottom Left: Log -->
+        <div class="hud-cell" id="btn-log" onclick="triggerEffect(this); activateLog()">
+            <div class="hud-label">SYSTEM_LOG</div>
+            <div class="hud-sub">STATUS CHECK</div>
+        </div>
+
+        <!-- Bottom Right: Shutdown -->
+        <div class="hud-cell" id="btn-off" onclick="triggerEffect(this); activateStandby()">
+            <div class="hud-label">STANDBY</div>
+            <div class="hud-sub">POWER SAVING</div>
+        </div>
+    </div>
+
+    <!-- Overlays -->
+
+    <!-- 1. Smoke Overlay -->
+    <div id="overlay-smoke" class="overlay">
+        <div style="margin-bottom: 20px; font-size: 1rem; color: #666;">REBOOTING WILLPOWER...</div>
+        <div id="timer-display">05:00</div>
+        <div class="close-btn" onclick="deactivateSmoke()">OVERRIDE (Emergency)</div>
+    </div>
+
+    <!-- 2. Anger Overlay -->
+    <div id="overlay-anger" class="overlay">
+        <div id="breath-circle" class="breath-circle"></div>
+        <div class="breath-text" id="breath-instruction">INHALE...</div>
+        <div class="close-btn" onclick="deactivateAnger()">CENTERED</div>
+    </div>
+
+    <!-- 3. Log Overlay -->
+    <div id="overlay-log" class="overlay" onclick="deactivateLog()">
+        <div class="log-content">
+            <h3 style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">SYSTEM STATUS</h3>
+            <ul style="list-style: none; padding: 0; text-align: left; font-size: 0.9rem; line-height: 1.8;">
+                <li>[ OK ] GHOST ENGINE INITIALIZED</li>
+                <li>[ OK ] UI RENDER MODULE LOADED</li>
+                <li>[ -- ] DATA SYNC PENDING</li>
+                <li style="color: #666; margin-top: 10px;">> SYSTEM OPERATIONAL...</li>
+            </ul>
+            <div style="margin-top: 20px; font-size: 0.7rem; color: #444;">CLICK ANYWHERE TO DISMISS</div>
+        </div>
+    </div>
+
+    <!-- 4. Standby Overlay -->
+    <div id="overlay-standby" class="overlay" onclick="deactivateStandby()">
+        <div id="standby-text">STANDBY /// TAP TO WAKE</div>
+    </div>
+
+    <script>
+        // --- Core Logic ---
+
+        // Visual Feedback
+        function triggerEffect(element) {
+            element.classList.add('active-flash');
+            setTimeout(() => {
+                element.classList.remove('active-flash');
+            }, 150);
+        }
+
+        // 1. Smoking Logic
+        let smokeInterval;
+        const smokeOverlay = document.getElementById('overlay-smoke');
+        const timerDisplay = document.getElementById('timer-display');
+
+        function activateSmoke() {
+            smokeOverlay.classList.add('active');
+            let duration = 300; // 5 minutes in seconds
+            updateTimerDisplay(duration);
+            
+            clearInterval(smokeInterval);
+            smokeInterval = setInterval(() => {
+                duration--;
+                if (duration < 0) {
+                    clearInterval(smokeInterval);
+                    deactivateSmoke();
+                    return;
+                }
+                updateTimerDisplay(duration);
+            }, 1000);
+        }
+
+        function updateTimerDisplay(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${m}:${s}`;
+        }
+
+        function deactivateSmoke() {
+            smokeOverlay.classList.remove('active');
+            clearInterval(smokeInterval);
+        }
+
+        // 2. Anger Logic
+        const angerOverlay = document.getElementById('overlay-anger');
+        const breathCircle = document.getElementById('breath-circle');
+        const breathText = document.getElementById('breath-instruction');
+        let breathTimeout;
+
+        function activateAnger() {
+            angerOverlay.classList.add('active');
+            breathCircle.classList.add('breathing-active');
+            runBreathCycle();
+        }
+
+        function runBreathCycle() {
+            // Simple text sync with CSS animation (8s total: 4s in, 4s out)
+            breathText.textContent = "INHALE...";
+            
+            // This is a rough sync. CSS drives the motion.
+            const cycle = () => {
+                if(!angerOverlay.classList.contains('active')) return;
+                breathText.textContent = "INHALE...";
+                setTimeout(() => {
+                    if(!angerOverlay.classList.contains('active')) return;
+                    breathText.textContent = "EXHALE...";
+                }, 4000); // Half of 8s
+                
+                breathTimeout = setTimeout(cycle, 8000);
+            };
+            cycle();
+        }
+
+        function deactivateAnger() {
+            angerOverlay.classList.remove('active');
+            breathCircle.classList.remove('breathing-active');
+            clearTimeout(breathTimeout);
+        }
+
+        // 3. Log Logic
+        const logOverlay = document.getElementById('overlay-log');
+        function activateLog() {
+            logOverlay.classList.add('active');
+        }
+        function deactivateLog() {
+            logOverlay.classList.remove('active');
+        }
+
+        // 4. Standby Logic
+        const standbyOverlay = document.getElementById('overlay-standby');
+        function activateStandby() {
+            standbyOverlay.classList.add('active');
+        }
+        function deactivateStandby() {
+            standbyOverlay.classList.remove('active');
+        }
+
+    </script>
+</body>
+</html>
