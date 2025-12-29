@@ -1,32 +1,37 @@
-<!-- zero-mode_v1.5_lifestyle.html -->
+<!-- zero-mode_v1.6_ritual.html -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO-MODE v1.5 // LIFESTYLE</title>
+    <title>ZERO-MODE v1.6 // RITUAL</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=Jura:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=Jura:wght@300;400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --bg-deep: #121620;
+            --bg-void: #05070a;
             --fg-champagne: #D4D4D2;
             --fg-dim: rgba(212, 212, 210, 0.4);
-            --border: 1px solid rgba(212, 212, 210, 0.12);
-            --font-main: "Noto Sans TC", sans-serif;
-            --font-eng: "Jura", sans-serif;
+            --fg-faint: rgba(212, 212, 210, 0.15);
+            --border-std: 1px solid rgba(212, 212, 210, 0.12);
+            --glow-soft: 0 0 15px rgba(212, 212, 210, 0.1);
+            --glow-active: 0 0 25px rgba(212, 212, 210, 0.25);
+            
+            --font-ui: "Noto Sans TC", sans-serif;
+            --font-num: "Jura", monospace;
         }
 
         * {
             box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
             margin: 0;
             padding: 0;
-            outline: none;
+            user-select: none;
+            -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         body, html {
@@ -34,20 +39,32 @@
             height: 100%;
             background-color: var(--bg-deep);
             color: var(--fg-champagne);
-            font-family: var(--font-main);
+            font-family: var(--font-ui);
             font-weight: 300;
-            overflow: hidden; /* 鎖定畫面，無捲軸 */
+            overflow: hidden; /* Strict lock */
+            letter-spacing: 0.05em;
         }
 
         /* --- Transitions --- */
-        .fade-enter { animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        .fade-exit { animation: fadeOut 0.3s ease forwards; }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .fade-out { animation: fadeOut 0.4s ease forwards; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); filter: blur(2px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
         @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.02); } }
 
-        /* --- Grid Layout --- */
-        #app {
+        /* --- Interaction Glow --- */
+        @keyframes clickPulse {
+            0% { background-color: rgba(255,255,255,0); box-shadow: inset 0 0 0 rgba(255,255,255,0); }
+            20% { background-color: rgba(255,255,255,0.05); box-shadow: inset 0 0 20px rgba(255,255,255,0.1); }
+            100% { background-color: rgba(255,255,255,0); box-shadow: inset 0 0 0 rgba(255,255,255,0); }
+        }
+
+        .click-effect {
+            animation: clickPulse 0.4s ease-out;
+        }
+
+        /* --- Layout --- */
+        #stage {
             position: relative;
             width: 100vw;
             height: 100vh;
@@ -59,10 +76,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: grid; /* Grid only when active */
+            display: none;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
-            display: none;
         }
 
         .layer.active {
@@ -75,45 +91,34 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border: var(--border);
+            border: var(--border-std);
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: border-color 0.3s ease;
         }
 
-        /* Border Clean-up */
+        /* Border Logic: Clean Inner Lines */
         .cell:nth-child(1) { border-top: 0; border-left: 0; }
         .cell:nth-child(2) { border-top: 0; border-right: 0; }
         .cell:nth-child(3) { border-bottom: 0; border-left: 0; }
         .cell:nth-child(4) { border-bottom: 0; border-right: 0; }
 
-        .cell:active {
-            background-color: rgba(212, 212, 210, 0.05);
-        }
-
         /* Typography */
-        .txt-title {
-            font-size: 1.25rem;
-            letter-spacing: 0.15em;
-            margin-bottom: 10px;
+        .txt-head {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.12em;
         }
-
-        .txt-sub {
-            font-family: var(--font-eng);
-            font-size: 0.75rem;
+        .txt-meta {
+            font-family: var(--font-num);
+            font-size: 0.7rem;
             color: var(--fg-dim);
-            letter-spacing: 0.2em;
+            letter-spacing: 0.25em;
             text-transform: uppercase;
         }
 
-        /* --- Z-Mode Button Special Style --- */
-        #btn-zmode .txt-title {
-            font-weight: 400;
-        }
-        #btn-zmode {
-            /* 右下角特殊的加粗邊框 */
-            border: 1.5px solid rgba(212, 212, 210, 0.3);
-            border-bottom: 0;
-            border-right: 0;
+        /* Special: Z-Mode Button Highlight */
+        #btn-zmode .txt-head {
+            text-shadow: 0 0 10px rgba(212, 212, 210, 0.2);
         }
 
         /* --- Overlays --- */
@@ -131,289 +136,327 @@
             align-items: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease;
-            text-align: center;
-            padding: 40px;
+            transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1);
         }
-
         .overlay.visible {
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* Timer UI */
+        /* 1. Timer UI */
         .timer-display {
-            font-family: var(--font-eng);
-            font-size: 15vw;
+            font-family: var(--font-num);
+            font-size: 16vw;
             font-weight: 300;
             line-height: 1;
-            margin: 2rem 0;
+            margin: 30px 0;
             font-variant-numeric: tabular-nums;
         }
-
-        .quote-text {
-            font-size: 0.95rem;
-            line-height: 1.6;
+        .timer-desc {
+            font-size: 0.9rem;
             color: var(--fg-dim);
-            letter-spacing: 1px;
+            letter-spacing: 0.2em;
             max-width: 80%;
-            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.6;
         }
 
-        /* Checklists */
-        .checklist-container {
+        /* 2. Checklist UI (Task) */
+        .checklist-box {
             text-align: left;
-            margin-bottom: 30px;
-            color: var(--fg-champagne);
-            font-size: 1rem;
-            line-height: 2;
+            margin-bottom: 40px;
         }
-        .checklist-item::before {
-            content: "□ ";
-            opacity: 0.5;
-            margin-right: 10px;
+        .check-item {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: var(--fg-champagne);
+            display: flex;
+            align-items: center;
+        }
+        .check-item::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border: 1px solid var(--fg-dim);
+            margin-right: 15px;
+            transform: rotate(45deg);
         }
 
-        /* Buttons */
-        .btn-ghost {
-            margin-top: 30px;
-            padding: 12px 36px;
-            border: 1px solid var(--fg-dim);
-            color: var(--fg-dim);
+        /* 3. Ritual Select UI */
+        .btn-option {
             background: transparent;
-            font-size: 0.8rem;
+            border: 1px solid var(--fg-dim);
+            color: var(--fg-champagne);
+            padding: 15px 40px;
+            margin: 10px 0;
+            font-size: 0.9rem;
             letter-spacing: 2px;
             cursor: pointer;
-            border-radius: 50px; /* More organic shape for lifestyle */
-            transition: all 0.3s;
+            width: 260px;
+            transition: all 0.4s;
         }
-        .btn-ghost:hover, .btn-ghost:active {
+        .btn-option:hover, .btn-option:active {
             border-color: var(--fg-champagne);
-            color: var(--fg-champagne);
+            background: rgba(255,255,255,0.03);
+            box-shadow: var(--glow-soft);
         }
 
-        /* Nav Return */
-        .nav-return {
+        /* 4. Special Modes */
+        .mode-black {
+            background-color: var(--bg-void) !important;
+        }
+        
+        /* Breathing Animation for Sensory Mode */
+        .breathing-glow {
+            width: 20px;
+            height: 20px;
+            background-color: var(--fg-champagne);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--fg-champagne);
+            animation: deepBreath 10s infinite ease-in-out;
+            margin-bottom: 50px;
+        }
+        @keyframes deepBreath {
+            0%, 100% { transform: scale(0.5); opacity: 0.1; }
+            50% { transform: scale(1.5); opacity: 0.6; }
+        }
+
+        /* Soul Mode Text */
+        .soul-text {
+            color: var(--fg-faint);
+            font-size: 0.85rem;
+            letter-spacing: 0.3em;
+            text-align: center;
+            line-height: 2;
+        }
+
+        /* Navigation */
+        .btn-cancel {
+            margin-top: 50px;
+            border: none;
+            background: none;
+            color: var(--fg-dim);
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            padding: 10px;
+            transition: color 0.3s;
+        }
+        .btn-cancel:hover { color: var(--fg-champagne); }
+
+        .nav-back {
             position: absolute;
             bottom: 30px;
-            font-size: 0.8rem;
+            left: 50%;
+            transform: translateX(-50%);
             color: var(--fg-dim);
+            font-size: 0.8rem;
             cursor: pointer;
-            letter-spacing: 2px;
-            opacity: 0.7;
-        }
-
-        /* Rot Mode Specifics */
-        #overlay-rot {
-            background-color: #0d1017; /* Slightly darker */
-        }
-        .rot-msg {
-            font-size: 1.1rem;
-            letter-spacing: 3px;
-            line-height: 2;
-            opacity: 0.8;
+            letter-spacing: 0.2em;
+            padding: 10px;
         }
 
     </style>
 </head>
 <body>
 
-    <div id="app">
+    <div id="stage">
         
-        <!-- LAYER 1: COMMAND -->
-        <div id="layer-main" class="layer active fade-enter">
-            <!-- TL -->
-            <div class="cell" onclick="hud.startTimer(300, 'NICOTINE PURGE', '深呼吸，尼古丁不是你的朋友。')">
-                <div class="txt-title">菸癮阻斷</div>
-                <div class="txt-sub">DETOX 5:00</div>
+        <!-- LAYER 1: MAIN -->
+        <div id="layer-main" class="layer active fade-in">
+            <div class="cell" onclick="sys.action(this, () => sys.timer(300, 'RECLAIM CONTROL', '重掌控制'))">
+                <div class="txt-head">菸癮阻斷</div>
+                <div class="txt-meta">PURGE 05:00</div>
             </div>
-            <!-- TR -->
-            <div class="cell" onclick="hud.startTimer(90, 'ANGER RESET', '現在生氣，等等看起來會很蠢。')">
-                <div class="txt-title">怒氣降溫</div>
-                <div class="txt-sub">BREATHE 90s</div>
+            <div class="cell" onclick="sys.action(this, () => sys.timer(90, 'EMOTIONAL RESET', '情緒歸零'))">
+                <div class="txt-head">怒氣降溫</div>
+                <div class="txt-meta">BREATHE 01:30</div>
             </div>
-            <!-- BL -->
-            <div class="cell" onclick="hud.startTimer(2700, 'FLOW STATE', '這個世界可以等你 45 分鐘。')">
-                <div class="txt-title">深度專注</div>
-                <div class="txt-sub">FOCUS 45:00</div>
+            <div class="cell" onclick="sys.action(this, () => sys.timer(2700, 'DEEP FLOW', '專注是你的特權'))">
+                <div class="txt-head">深度專注</div>
+                <div class="txt-meta">FOCUS 45:00</div>
             </div>
-            <!-- BR: Z-Mode Entry -->
-            <div id="btn-zmode" class="cell" onclick="hud.switchLayer('layer-lifestyle')">
-                <div class="txt-title">z-mode</div>
-                <div class="txt-sub">生活接管</div>
+            <div class="cell" id="btn-zmode" onclick="sys.action(this, () => sys.nav('layer-zmode'))">
+                <div class="txt-head">z-mode</div>
+                <div class="txt-meta">思緒過濾</div>
             </div>
         </div>
 
-        <!-- LAYER 2: LIFESTYLE TAKEOVER -->
-        <div id="layer-lifestyle" class="layer">
-            <!-- TL: Logistics -->
-            <div class="cell" onclick="hud.modeLogistics()">
-                <div class="txt-title">後勤・代辦</div>
-                <div class="txt-sub">LOGISTICS</div>
+        <!-- LAYER 2: Z-MODE FILTER -->
+        <div id="layer-zmode" class="layer">
+            <!-- TL: Task -->
+            <div class="cell" onclick="sys.action(this, sys.modeTask)">
+                <div class="txt-head">任務・校準</div>
+                <div class="txt-meta">ALIGNMENT</div>
             </div>
-            <!-- TR: Rituals -->
-            <div class="cell" onclick="hud.modeRitual()">
-                <div class="txt-title">生活・儀式</div>
-                <div class="txt-sub">RITUALS</div>
+            <!-- TR: Ritual -->
+            <div class="cell" onclick="sys.action(this, sys.modeRitualMenu)">
+                <div class="txt-head">生活・儀式</div>
+                <div class="txt-meta">LIFESTYLE</div>
             </div>
-            <!-- BL: Noise Block -->
-            <div class="cell" onclick="hud.startTimer(600, 'NOISE BLOCK', '把腦袋裡的聲音關小一點。')">
-                <div class="txt-title">雜念・屏蔽</div>
-                <div class="txt-sub">BUFFER 10:00</div>
+            <!-- BL: Sensory -->
+            <div class="cell" onclick="sys.action(this, sys.modeSensory)">
+                <div class="txt-head">感官・淨化</div>
+                <div class="txt-meta">PURIFICATION</div>
             </div>
-            <!-- BR: Rot Mode -->
-            <div class="cell" onclick="hud.modeRot()">
-                <div class="txt-title">徹底・開擺</div>
-                <div class="txt-sub">LET IT GO</div>
+            <!-- BR: Soul -->
+            <div class="cell" onclick="sys.action(this, sys.modeSoul)">
+                <div class="txt-head">靈魂・留白</div>
+                <div class="txt-meta">VOID SPACE</div>
             </div>
 
-            <div class="nav-return" style="left: 50%; transform: translateX(-50%);" onclick="hud.switchLayer('layer-main')">
-                ← 返回主控台
-            </div>
+            <div class="nav-back" onclick="sys.nav('layer-main')">× 返回主頁</div>
         </div>
 
     </div>
 
     <!-- === OVERLAYS === -->
 
-    <!-- 1. Universal Timer Overlay -->
-    <div id="overlay-timer" class="overlay">
-        <div class="txt-sub" id="timer-label">PROCESSING</div>
-        <div class="timer-display" id="timer-val">00:00</div>
-        <div class="quote-text" id="timer-quote">...</div>
-        <button class="btn-ghost" onclick="hud.stopTimer()">我知道了，解除。</button>
+    <!-- 1. Universal Timer -->
+    <div id="view-timer" class="overlay">
+        <div class="timer-desc" id="ui-quote">PROCESSING</div>
+        <div class="timer-display" id="ui-time">00:00</div>
+        <div class="timer-desc" id="ui-label" style="font-family: var(--font-num);">MODE ACTIVE</div>
+        <button class="btn-cancel" onclick="sys.stop()">完成 / 中斷</button>
     </div>
 
-    <!-- 2. Logistics Overlay -->
-    <div id="overlay-logistics" class="overlay">
-        <div class="txt-title" style="margin-bottom: 30px;">快速後勤檢查 (90s)</div>
-        <div class="checklist-container">
-            <div class="checklist-item">機票 / 票券 確認</div>
-            <div class="checklist-item">行程 / 會議 對接</div>
-            <div class="checklist-item">帳單 / 轉帳 清算</div>
+    <!-- 2. Task Calibration Overlay -->
+    <div id="view-task" class="overlay">
+        <div class="txt-head" style="margin-bottom: 30px;">90秒 快速校準</div>
+        <div class="checklist-box">
+            <div class="check-item">確認當前唯一目標</div>
+            <div class="check-item">移除桌面無關雜物</div>
+            <div class="check-item">手機開啟勿擾模式</div>
         </div>
-        <div class="timer-display" id="logistics-timer" style="font-size: 3rem;">01:30</div>
-        <button class="btn-ghost" onclick="hud.stopLogistics()">檢查完畢</button>
+        <div class="timer-display" id="task-time">01:30</div>
+        <button class="btn-cancel" onclick="sys.stop()">準備完成</button>
     </div>
 
-    <!-- 3. Ritual Selection Overlay -->
-    <div id="overlay-ritual-select" class="overlay">
-        <div class="txt-title" style="margin-bottom: 40px;">選擇你的儀式感</div>
-        
-        <button class="btn-ghost" style="margin: 10px; width: 200px;" 
-            onclick="hud.startTimer(300, 'MICRO WORKOUT', '不流汗也沒關係，肚子大點也挺好。')">
-            微運動 (5 min)
-        </button>
-        
-        <button class="btn-ghost" style="margin: 10px; width: 200px;" 
-            onclick="hud.startTimer(2700, 'DESIGN NOTES', '沒靈感就隨便畫個圓圈。')">
-            設計筆記 (45 min)
-        </button>
-
-        <button class="btn-ghost" style="margin: 10px; width: 200px;" 
-            onclick="hud.startTimer(1800, 'COOKING', '記得加鹽，別燒廚房。')">
-            下廚時光 (30 min)
-        </button>
-
-        <div class="nav-return" onclick="hud.closeOverlay('overlay-ritual-select')">取消</div>
+    <!-- 3. Ritual Menu -->
+    <div id="view-menu" class="overlay">
+        <div class="txt-head" style="margin-bottom: 40px; opacity: 0.8;">選擇當下儀式</div>
+        <button class="btn-option" onclick="sys.timer(300, 'MICRO WORKOUT', '喚醒身體')">微運動 (5 min)</button>
+        <button class="btn-option" onclick="sys.timer(1800, 'COOKING RITUAL', '專注食材')">下廚 (30 min)</button>
+        <button class="btn-option" onclick="sys.timer(2700, 'CREATIVE SESSION', '設計與思考')">設計/創作 (45 min)</button>
+        <button class="btn-cancel" onclick="sys.closeOverlay('view-menu')">取消</button>
     </div>
 
-    <!-- 4. Rot (Relax) Mode -->
-    <div id="overlay-rot" class="overlay" onclick="hud.closeOverlay('overlay-rot')">
-        <div class="rot-msg">人生不必隨時都在進步，</div>
-        <div class="rot-msg" style="margin-bottom: 40px;">安心廢吧。</div>
-        <div class="txt-sub" style="opacity: 0.3;">TAP TO WAKE UP</div>
+    <!-- 4. Sensory (Black) -->
+    <div id="view-sensory" class="overlay mode-black">
+        <div class="breathing-glow"></div>
+        <div class="timer-display" id="sensory-time" style="font-size: 3rem; opacity: 0.3;">10:00</div>
+        <div class="timer-desc" style="opacity: 0.3;">閉上眼，只聽呼吸</div>
+        <button class="btn-cancel" style="opacity: 0.1;" onclick="sys.stop()">WAKE UP</button>
+    </div>
+
+    <!-- 5. Soul (Void) -->
+    <div id="view-soul" class="overlay mode-black">
+        <div class="timer-display" id="soul-time" style="font-size: 1.5rem; color: var(--fg-faint);">15:00</div>
+        <div class="soul-text">
+            此時無事<br><br>世界與你無關
+        </div>
+        <button class="btn-cancel" style="opacity: 0.1; margin-top: 100px;" onclick="sys.stop()">RETURN</button>
     </div>
 
     <script>
-        const hud = {
+        const sys = {
             state: {
-                timerInterval: null,
+                interval: null
             },
 
-            // --- Navigation ---
-            switchLayer: function(targetId) {
-                document.querySelectorAll('.layer').forEach(el => {
-                    el.classList.remove('active', 'fade-enter');
-                });
+            // Interaction Feedback
+            action: function(el, callback) {
+                // Add flash class
+                el.classList.add('click-effect');
+                setTimeout(() => el.classList.remove('click-effect'), 400);
                 
+                // Execute logic slightly after for feel
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 50);
+            },
+
+            // Navigation
+            nav: function(targetId) {
+                const layers = document.querySelectorAll('.layer');
                 const target = document.getElementById(targetId);
-                target.classList.add('active', 'fade-enter');
+                
+                layers.forEach(l => {
+                    if(l.classList.contains('active')) {
+                        l.classList.add('fade-out');
+                        setTimeout(() => {
+                            l.classList.remove('active', 'fade-out', 'fade-in');
+                        }, 400);
+                    }
+                });
+
+                setTimeout(() => {
+                    target.classList.add('active', 'fade-in');
+                }, 300);
             },
 
             closeOverlay: function(id) {
                 document.getElementById(id).classList.remove('visible');
             },
 
-            // --- Core Timer Logic ---
-            startTimer: function(seconds, label, quote) {
-                // If coming from ritual selection, close it first
-                this.closeOverlay('overlay-ritual-select');
-
-                const overlay = document.getElementById('overlay-timer');
-                const display = document.getElementById('timer-val');
+            // Core Timer Logic
+            timer: function(seconds, label, quote) {
+                this.closeOverlay('view-menu'); // Ensure menu is closed if open
                 
-                document.getElementById('timer-label').innerText = label;
-                document.getElementById('timer-quote').innerText = quote || "Keep moving forward.";
+                const view = document.getElementById('view-timer');
+                document.getElementById('ui-label').innerText = label;
+                document.getElementById('ui-quote').innerText = quote;
                 
-                overlay.classList.add('visible');
-                
-                this.runTimer(seconds, display);
+                view.classList.add('visible');
+                this.run(seconds, 'ui-time');
             },
 
-            stopTimer: function() {
-                clearInterval(this.state.timerInterval);
-                this.closeOverlay('overlay-timer');
-            },
-
-            runTimer: function(duration, displayEl, callback) {
-                if (this.state.timerInterval) clearInterval(this.state.timerInterval);
+            run: function(seconds, elementId) {
+                if (this.state.interval) clearInterval(this.state.interval);
                 
-                let timer = duration;
-                
-                const update = () => {
-                    const m = Math.floor(timer / 60).toString().padStart(2, '0');
-                    const s = (timer % 60).toString().padStart(2, '0');
-                    displayEl.innerText = `${m}:${s}`;
+                const el = document.getElementById(elementId);
+                const update = (s) => {
+                    const m = Math.floor(s / 60).toString().padStart(2, '0');
+                    const sec = (s % 60).toString().padStart(2, '0');
+                    el.innerText = `${m}:${sec}`;
                 };
-
-                update();
-
-                this.state.timerInterval = setInterval(() => {
-                    timer--;
-                    if (timer < 0) {
-                        clearInterval(this.state.timerInterval);
-                        if (callback) callback();
+                
+                update(seconds);
+                
+                this.state.interval = setInterval(() => {
+                    seconds--;
+                    if (seconds < 0) {
+                        this.stop();
                     } else {
-                        update();
+                        update(seconds);
                     }
                 }, 1000);
             },
 
-            // --- Specific Modes ---
-
-            modeLogistics: function() {
-                const overlay = document.getElementById('overlay-logistics');
-                const display = document.getElementById('logistics-timer');
-                overlay.classList.add('visible');
-                this.runTimer(90, display, () => {
-                    // Timeout logic could go here
-                });
-            },
-            
-            stopLogistics: function() {
-                clearInterval(this.state.timerInterval);
-                this.closeOverlay('overlay-logistics');
+            stop: function() {
+                clearInterval(this.state.interval);
+                document.querySelectorAll('.overlay').forEach(o => o.classList.remove('visible'));
             },
 
-            modeRitual: function() {
-                const overlay = document.getElementById('overlay-ritual-select');
-                overlay.classList.add('visible');
+            // Specific Modes
+            modeTask: function() {
+                document.getElementById('view-task').classList.add('visible');
+                sys.run(90, 'task-time');
             },
 
-            modeRot: function() {
-                const overlay = document.getElementById('overlay-rot');
-                overlay.classList.add('visible');
+            modeRitualMenu: function() {
+                document.getElementById('view-menu').classList.add('visible');
+            },
+
+            modeSensory: function() {
+                document.getElementById('view-sensory').classList.add('visible');
+                sys.run(600, 'sensory-time'); // 10 mins
+            },
+
+            modeSoul: function() {
+                document.getElementById('view-soul').classList.add('visible');
+                sys.run(900, 'soul-time'); // 15 mins
             }
         };
     </script>
