@@ -1,24 +1,29 @@
-<!-- zero-mode v1.1.html -->
+<!-- zero-mode_v2.0.html -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO-MODE v1.1</title>
+    <title>ZERO-MODE v2.0 // DECISION CORE</title>
     <style>
         :root {
-            --bg-color: #000000;
-            --fg-color: #E0E0E0;
-            --line-color: rgba(224, 224, 224, 0.15);
-            --accent-color: #FFFFFF;
-            --font-main: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+            /* Palette */
+            --bg-deep: #121620;
+            --fg-champagne: #D4D4D2;
+            --border-dim: rgba(212, 212, 210, 0.1);
+            --border-active: rgba(212, 212, 210, 0.5);
+            --accent-alert: #FF5C5C;
+            
+            /* Typography */
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
         }
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
@@ -26,21 +31,52 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--bg-color);
-            color: var(--fg-color);
+            background-color: var(--bg-deep);
+            color: var(--fg-champagne);
             font-family: var(--font-main);
-            font-weight: 300; /* Light font weight for elegance */
-            overflow: hidden;
-            letter-spacing: 1px;
+            overflow: hidden; /* Strict no-scroll */
         }
 
-        /* 2x2 Grid Layout */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+        /* --- Transitions --- */
+        .fade-enter {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .fade-exit {
+            animation: fadeOut 0.3s ease-in forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.02); } }
+
+        /* --- Layout Structures --- */
+        #app-root {
+            position: relative;
             width: 100vw;
             height: 100vh;
+        }
+
+        .page-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-deep);
+            display: none; /* Hidden by default */
+            z-index: 10;
+        }
+
+        .page-layer.active {
+            display: grid; /* Grid is applied when active */
+        }
+
+        /* 2x2 Matrix Grid */
+        .matrix-grid {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            width: 100%;
+            height: 100%;
         }
 
         .cell {
@@ -49,51 +85,79 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border: 0.5px solid var(--line-color);
+            border: 1px solid var(--border-dim);
+            transition: all 0.2s ease;
             cursor: pointer;
-            transition: background-color 0.4s ease, transform 0.1s ease;
         }
 
-        /* Border adjustments for minimalist look (removing outer borders logically) */
-        .cell:nth-child(1) { border-left: none; border-top: none; }
-        .cell:nth-child(2) { border-right: none; border-top: none; }
-        .cell:nth-child(3) { border-left: none; border-bottom: none; }
-        .cell:nth-child(4) { border-right: none; border-bottom: none; }
+        /* Smart Borders: Remove outer borders for clean look */
+        .cell:nth-child(1) { border-top: 0; border-left: 0; }
+        .cell:nth-child(2) { border-top: 0; border-right: 0; }
+        .cell:nth-child(3) { border-bottom: 0; border-left: 0; }
+        .cell:nth-child(4) { border-bottom: 0; border-right: 0; }
 
-        .cell:active {
-            background-color: rgba(255, 255, 255, 0.03);
+        /* Interaction feedback */
+        .cell.flash-active {
+            background-color: rgba(212, 212, 210, 0.05);
+            border-color: var(--border-active);
         }
 
-        .label-main {
-            font-size: 1.1rem;
+        /* Typography Styles */
+        .label-primary {
+            font-size: 1.25rem;
+            font-weight: 300; /* Light */
+            letter-spacing: 2px;
             margin-bottom: 8px;
-            letter-spacing: 3px;
-            opacity: 0.9;
         }
 
         .label-sub {
-            font-size: 0.75rem;
-            color: #888;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            opacity: 0.6;
             letter-spacing: 1px;
-            font-weight: 200;
+            text-transform: uppercase;
         }
 
-        /* Overlays Common */
+        /* Navigation Bar for Layer 2 */
+        .nav-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top: 1px solid var(--border-dim);
+            background: var(--bg-deep);
+            cursor: pointer;
+            z-index: 20;
+        }
+        
+        .nav-text {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .nav-bar:active .nav-text { opacity: 1; color: #fff; }
+
+        /* --- Overlays --- */
         .overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--bg-color);
-            z-index: 50;
+            background-color: var(--bg-deep);
+            z-index: 100;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.5s ease;
         }
 
         .overlay.active {
@@ -101,274 +165,238 @@
             pointer-events: auto;
         }
 
-        /* Close / Action Button */
-        .action-btn {
-            position: absolute;
-            bottom: 60px;
-            padding: 12px 32px;
-            border: 0.5px solid var(--line-color);
-            border-radius: 30px; /* Pill shape */
-            color: #888;
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .action-btn:hover, .action-btn:active {
-            border-color: var(--fg-color);
-            color: var(--fg-color);
-        }
-
-        /* 1. Smoke Cooldown (Impulse Control) */
-        .timer-text {
-            font-size: 3.5rem;
-            font-weight: 200;
-            letter-spacing: 4px;
-            animation: text-breath 4s infinite ease-in-out;
-        }
-
-        .timer-sub {
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #666;
-            letter-spacing: 2px;
-        }
-
-        @keyframes text-breath {
-            0%, 100% { opacity: 0.9; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.98); }
-        }
-
-        /* 2. Anger Cooldown (Breath Tuning) */
-        .ring-container {
-            position: relative;
-            width: 160px;
-            height: 160px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .breath-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 1px solid var(--fg-color);
-            border-radius: 50%;
-            opacity: 0.6;
-            transform: scale(0.4);
-        }
-
-        .breathing-anim {
-            animation: ring-breathe 8s infinite cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes ring-breathe {
-            0% { transform: scale(0.4); opacity: 0.3; } /* Empty lungs */
-            40% { transform: scale(1); opacity: 1; border-color: #fff; } /* Full lungs */
-            50% { transform: scale(1); opacity: 1; } /* Hold */
-            90% { transform: scale(0.4); opacity: 0.3; } /* Exhale */
-            100% { transform: scale(0.4); opacity: 0.3; }
-        }
-
-        .breath-hint {
-            margin-top: 50px;
-            font-size: 0.85rem;
-            letter-spacing: 4px;
-            color: #888;
-        }
-
-        /* 3. Log (Stats) */
-        .stat-display {
-            font-size: 4rem;
+        /* Timer Specifics */
+        #timer-display {
+            font-family: var(--font-main);
+            font-size: 18vw; /* Massive but thin */
             font-weight: 100;
-        }
-        .stat-label {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #666;
-            letter-spacing: 2px;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
         }
 
-        /* 4. Deep Silence (Standby) */
-        #standby-trigger {
-            position: absolute;
-            bottom: 30px;
-            color: #222; /* Extremely faint */
+        #timer-label {
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            color: var(--fg-champagne);
+            opacity: 0.5;
+        }
+
+        .btn-override {
+            margin-top: 60px;
+            padding: 12px 24px;
+            border: 1px solid var(--border-dim);
+            color: var(--fg-champagne);
+            font-family: var(--font-mono);
             font-size: 0.75rem;
             letter-spacing: 2px;
-            transition: color 1s ease;
-        }
-        
-        .overlay-standby-active #standby-trigger {
-            animation: faint-pulse 5s infinite;
+            background: transparent;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.3s, border-color 0.3s;
         }
 
-        @keyframes faint-pulse {
-            0%, 100% { color: #111; }
-            50% { color: #333; }
+        .btn-override:active {
+            opacity: 1;
+            border-color: var(--accent-alert);
+            color: var(--accent-alert);
         }
+
+        /* Silence Mode */
+        #overlay-silence {
+            background-color: #000000;
+        }
+        #silence-hint {
+            color: #333;
+            font-size: 0.8rem;
+            animation: breathe 4s infinite;
+        }
+        @keyframes breathe { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+
+        /* Log Overlay */
+        .log-container {
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .stat-number { font-size: 4rem; font-weight: 200; }
+        .stat-desc { font-family: var(--font-mono); font-size: 0.8rem; opacity: 0.6; margin-bottom: 30px; }
 
     </style>
 </head>
 <body>
 
-    <!-- Main Grid -->
-    <div class="grid-container">
-        <!-- Top Left: Smoke/Impulse -->
-        <div class="cell" onclick="app.startImpulseCooldown()">
-            <div class="label-main">衝動冷卻</div>
-            <div class="label-sub">IMPULSE CONTROL</div>
+    <div id="app-root">
+        
+        <!-- Layer 1: Executive Dashboard -->
+        <div id="layer-home" class="page-layer matrix-grid active">
+            <!-- Top Left -->
+            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(300, 'NICOTINE_PURGE')">
+                <div class="label-primary">戒菸冷卻</div>
+                <div class="label-sub">PROTOCOL 5:00</div>
+            </div>
+            <!-- Top Right -->
+            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(300, 'ANGER_DISSOLVE')">
+                <div class="label-primary">怒氣冷卻</div>
+                <div class="label-sub">CALIBRATE 5:00</div>
+            </div>
+            <!-- Bottom Left -->
+            <div class="cell" onclick="core.triggerEffect(this); core.showLog()">
+                <div class="label-primary">數據紀錄</div>
+                <div class="label-sub">SYSTEM LOGS</div>
+            </div>
+            <!-- Bottom Right: Switch to Decision Layer -->
+            <div class="cell" onclick="core.triggerEffect(this); core.switchLayer('layer-decision')">
+                <div class="label-primary">進入決策</div>
+                <div class="label-sub">EISENHOWER MATRIX</div>
+            </div>
         </div>
 
-        <!-- Top Right: Anger/Breath -->
-        <div class="cell" onclick="app.startBreathTuning()">
-            <div class="label-main">氣息調頻</div>
-            <div class="label-sub">RESET STATE</div>
+        <!-- Layer 2: Decision Matrix (Eisenhower) -->
+        <div id="layer-decision" class="page-layer matrix-grid">
+            <!-- Q1: Crisis (Important/Urgent) -->
+            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(90, 'CRISIS_MODE')">
+                <div class="label-primary">危機處置</div>
+                <div class="label-sub">IMMEDIATE / 90s</div>
+            </div>
+            <!-- Q2: Value (Important/Not Urgent) -->
+            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(2700, 'DEEP_WORK')">
+                <div class="label-primary">價值深耕</div>
+                <div class="label-sub">FOCUS / 45m</div>
+            </div>
+            <!-- Q3: Interruption (Not Important/Urgent) -->
+            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(600, 'BLOCK_NOISE')">
+                <div class="label-primary">阻斷干擾</div>
+                <div class="label-sub">BUFFER / 10m</div>
+            </div>
+            <!-- Q4: Waste (Not Important/Not Urgent) -->
+            <div class="cell" onclick="core.triggerEffect(this); core.startSilence()">
+                <div class="label-primary">終止虛耗</div>
+                <div class="label-sub">SHUTDOWN</div>
+            </div>
+
+            <!-- Return Nav (Overlapping bottom) -->
+            <div class="nav-bar" onclick="core.switchLayer('layer-home')">
+                <div class="nav-text">< 返回主控台</div>
+            </div>
         </div>
 
-        <!-- Bottom Left: Log -->
-        <div class="cell" onclick="app.showStats()">
-            <div class="label-main">狀態紀錄</div>
-            <div class="label-sub">TRACKING</div>
-        </div>
-
-        <!-- Bottom Right: Silence -->
-        <div class="cell" onclick="app.enterDeepSilence()">
-            <div class="label-main">深度靜默</div>
-            <div class="label-sub">SLEEP MODE</div>
-        </div>
     </div>
 
-    <!-- 1. Impulse Overlay -->
-    <div id="view-impulse" class="overlay">
-        <div id="impulse-timer" class="timer-text">05:00</div>
-        <div class="timer-sub">正在淨化思緒...</div>
-        <div class="action-btn" onclick="app.stopImpulse()">解除限制</div>
+    <!-- Timer Overlay -->
+    <div id="overlay-timer" class="overlay">
+        <div id="timer-display">00:00</div>
+        <div id="timer-label">MODE ACTIVE</div>
+        <button class="btn-override" onclick="core.stopTimer()">EMERGENCY OVERRIDE</button>
     </div>
 
-    <!-- 2. Breath Overlay -->
-    <div id="view-breath" class="overlay">
-        <div class="ring-container">
-            <div id="breath-ring" class="breath-ring"></div>
+    <!-- Silence Overlay -->
+    <div id="overlay-silence" class="overlay" onclick="core.stopSilence()">
+        <div id="silence-hint">System Suspended...</div>
+    </div>
+
+    <!-- Log Overlay -->
+    <div id="overlay-log" class="overlay" onclick="core.hideLog()">
+        <div class="log-container">
+            <div class="stat-number" id="log-count">0</div>
+            <div class="stat-desc">SESSION ACTIONS TODAY</div>
+            <div class="label-sub">[ TAP TO DISMISS ]</div>
         </div>
-        <div id="breath-text" class="breath-hint">吸氣</div>
-        <div class="action-btn" onclick="app.stopBreath()">完成調頻</div>
-    </div>
-
-    <!-- 3. Stats Overlay -->
-    <div id="view-stats" class="overlay">
-        <div class="stat-display" id="trigger-count">0</div>
-        <div class="stat-label">今日觸發次數</div>
-        <div class="action-btn" onclick="app.closeStats()">返回</div>
-    </div>
-
-    <!-- 4. Silence Overlay -->
-    <div id="view-silence" class="overlay" onclick="app.exitDeepSilence()" style="background: #000;">
-        <div id="standby-trigger">輕觸喚醒</div>
     </div>
 
     <script>
-        // Simple State Management
-        const app = {
-            state: {
-                triggerCount: 0,
+        const core = {
+            data: {
                 timerInterval: null,
-                breathTimeout: null
+                actionCount: 0
             },
-            
-            // --- 1. Impulse Logic ---
-            startImpulseCooldown: function() {
-                this.incrementCount();
-                this.openOverlay('view-impulse');
+
+            // --- UX Interactions ---
+            triggerEffect: function(el) {
+                el.classList.add('flash-active');
+                setTimeout(() => el.classList.remove('flash-active'), 150);
+                this.data.actionCount++;
+            },
+
+            switchLayer: function(targetId) {
+                const active = document.querySelector('.page-layer.active');
+                const target = document.getElementById(targetId);
+
+                if (active) {
+                    active.classList.add('fade-exit');
+                    setTimeout(() => {
+                        active.classList.remove('active', 'fade-exit');
+                        // Clean up style to ensure display toggle works
+                        active.style.display = ''; 
+                    }, 300);
+                }
+
+                // Small delay to allow exit animation to start naturally
+                setTimeout(() => {
+                    target.classList.add('active', 'fade-enter');
+                    setTimeout(() => target.classList.remove('fade-enter'), 400);
+                }, 50);
+            },
+
+            // --- Timer Logic ---
+            startTimer: function(seconds, labelText) {
+                const overlay = document.getElementById('overlay-timer');
+                const display = document.getElementById('timer-display');
+                const label = document.getElementById('timer-label');
                 
-                let seconds = 300; // 5 minutes
-                this.updateTimerDisplay(seconds);
+                label.innerText = labelText || 'PROCESSING';
+                overlay.classList.add('active');
                 
-                if (this.state.timerInterval) clearInterval(this.state.timerInterval);
-                
-                this.state.timerInterval = setInterval(() => {
-                    seconds--;
-                    if (seconds <= 0) {
-                        this.stopImpulse();
+                let remaining = seconds;
+                this.updateDisplay(remaining);
+
+                if (this.data.timerInterval) clearInterval(this.data.timerInterval);
+
+                this.data.timerInterval = setInterval(() => {
+                    remaining--;
+                    if (remaining < 0) {
+                        this.stopTimer();
                     } else {
-                        this.updateTimerDisplay(seconds);
+                        this.updateDisplay(remaining);
                     }
                 }, 1000);
             },
 
-            updateTimerDisplay: function(s) {
-                const min = Math.floor(s / 60).toString().padStart(2, '0');
-                const sec = (s % 60).toString().padStart(2, '0');
-                document.getElementById('impulse-timer').innerText = `${min}:${sec}`;
-            },
-
-            stopImpulse: function() {
-                clearInterval(this.state.timerInterval);
-                this.closeOverlay('view-impulse');
-            },
-
-            // --- 2. Breath Logic ---
-            startBreathTuning: function() {
-                this.incrementCount(); // Logic: Using tools counts as a "trigger" event handled
-                this.openOverlay('view-breath');
+            updateDisplay: function(sec) {
+                const display = document.getElementById('timer-display');
+                const m = Math.floor(sec / 60).toString().padStart(2, '0');
+                const s = (sec % 60).toString().padStart(2, '0');
                 
-                const ring = document.getElementById('breath-ring');
-                const text = document.getElementById('breath-text');
-                
-                ring.classList.add('breathing-anim');
-                
-                // Sync text with CSS animation (40% inhale, 10% hold, 50% exhale)
-                // Total 8s
-                const cycle = () => {
-                    text.innerText = "吸氣"; // 0-3.2s
-                    setTimeout(() => { if(ring.classList.contains('breathing-anim')) text.innerText = "屏息"; }, 3200);
-                    setTimeout(() => { if(ring.classList.contains('breathing-anim')) text.innerText = "吐氣"; }, 4000);
-                    
-                    this.state.breathTimeout = setTimeout(cycle, 8000);
-                };
-                cycle();
+                // If it's pure seconds (like 90s), and less than a minute, show seconds only?
+                // Request asked for standard logic, keeping MM:SS is safest for all durations.
+                display.innerText = `${m}:${s}`;
             },
 
-            stopBreath: function() {
-                clearTimeout(this.state.breathTimeout);
-                document.getElementById('breath-ring').classList.remove('breathing-anim');
-                this.closeOverlay('view-breath');
+            stopTimer: function() {
+                clearInterval(this.data.timerInterval);
+                document.getElementById('overlay-timer').classList.remove('active');
             },
 
-            // --- 3. Stats Logic ---
-            showStats: function() {
-                document.getElementById('trigger-count').innerText = this.state.triggerCount;
-                this.openOverlay('view-stats');
+            // --- Silence Mode ---
+            startSilence: function() {
+                this.data.actionCount++;
+                document.getElementById('overlay-silence').classList.add('active');
             },
 
-            closeStats: function() {
-                this.closeOverlay('view-stats');
+            stopSilence: function() {
+                document.getElementById('overlay-silence').classList.remove('active');
             },
 
-            incrementCount: function() {
-                this.state.triggerCount++;
+            // --- Log Logic ---
+            showLog: function() {
+                document.getElementById('log-count').innerText = this.data.actionCount;
+                document.getElementById('overlay-log').classList.add('active');
             },
-
-            // --- 4. Silence Logic ---
-            enterDeepSilence: function() {
-                const el = document.getElementById('view-silence');
-                el.classList.add('active', 'overlay-standby-active');
-            },
-
-            exitDeepSilence: function() {
-                const el = document.getElementById('view-silence');
-                el.classList.remove('active', 'overlay-standby-active');
-            },
-
-            // --- Utilities ---
-            openOverlay: function(id) {
-                document.getElementById(id).classList.add('active');
-            },
-
-            closeOverlay: function(id) {
-                document.getElementById(id).classList.remove('active');
+            
+            hideLog: function() {
+                document.getElementById('overlay-log').classList.remove('active');
             }
         };
     </script>
