@@ -1,52 +1,53 @@
-<!-- zero-mode_v1.4.html -->
+<!-- zero-mode_v1.5_lifestyle.html -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO-MODE v1.4 // INTERVENTION</title>
+    <title>ZERO-MODE v1.5 // LIFESTYLE</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=Jura:wght@300;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=Jura:wght@300;400&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --bg-deep: #121620;
-            --bg-overlay: rgba(18, 22, 32, 0.98);
-            --fg-main: #D4D4D2;
-            --fg-dim: rgba(212, 212, 210, 0.3);
-            --accent: #FFFFFF;
-            --border: 1px solid rgba(212, 212, 210, 0.15);
-            --font-ui: "Noto Sans TC", sans-serif;
-            --font-tech: "Jura", monospace;
+            --fg-champagne: #D4D4D2;
+            --fg-dim: rgba(212, 212, 210, 0.4);
+            --border: 1px solid rgba(212, 212, 210, 0.12);
+            --font-main: "Noto Sans TC", sans-serif;
+            --font-eng: "Jura", sans-serif;
         }
 
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
             outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
             width: 100%;
             height: 100%;
             background-color: var(--bg-deep);
-            color: var(--fg-main);
-            font-family: var(--font-ui);
-            overflow: hidden;
+            color: var(--fg-champagne);
+            font-family: var(--font-main);
             font-weight: 300;
+            overflow: hidden; /* 鎖定畫面，無捲軸 */
         }
 
-        /* --- Global Animations --- */
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        /* --- Transitions --- */
+        .fade-enter { animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .fade-exit { animation: fadeOut 0.3s ease forwards; }
 
-        /* --- Structure --- */
-        #viewport {
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.02); } }
+
+        /* --- Grid Layout --- */
+        #app {
             position: relative;
             width: 100vw;
             height: 100vh;
@@ -58,22 +59,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: grid;
+            display: grid; /* Grid only when active */
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(1.05);
+            display: none;
         }
 
         .layer.active {
-            opacity: 1;
-            pointer-events: auto;
-            transform: scale(1);
+            display: grid;
         }
 
-        /* --- Cells --- */
         .cell {
             position: relative;
             display: flex;
@@ -82,40 +77,46 @@
             align-items: center;
             border: var(--border);
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background-color 0.3s;
         }
 
-        /* No Outer Borders */
+        /* Border Clean-up */
         .cell:nth-child(1) { border-top: 0; border-left: 0; }
         .cell:nth-child(2) { border-top: 0; border-right: 0; }
         .cell:nth-child(3) { border-bottom: 0; border-left: 0; }
         .cell:nth-child(4) { border-bottom: 0; border-right: 0; }
 
-        /* Click Feedback */
         .cell:active {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .cell:active .label-main {
-            transform: scale(0.95);
-            color: var(--accent);
+            background-color: rgba(212, 212, 210, 0.05);
         }
 
         /* Typography */
-        .label-main {
-            font-size: 1.2rem;
+        .txt-title {
+            font-size: 1.25rem;
             letter-spacing: 0.15em;
-            margin-bottom: 8px;
-            transition: transform 0.1s;
+            margin-bottom: 10px;
         }
-        .label-sub {
-            font-family: var(--font-tech);
-            font-size: 0.7rem;
+
+        .txt-sub {
+            font-family: var(--font-eng);
+            font-size: 0.75rem;
             color: var(--fg-dim);
             letter-spacing: 0.2em;
             text-transform: uppercase;
         }
 
-        /* --- Overlays Common --- */
+        /* --- Z-Mode Button Special Style --- */
+        #btn-zmode .txt-title {
+            font-weight: 400;
+        }
+        #btn-zmode {
+            /* 右下角特殊的加粗邊框 */
+            border: 1.5px solid rgba(212, 212, 210, 0.3);
+            border-bottom: 0;
+            border-right: 0;
+        }
+
+        /* --- Overlays --- */
         .overlay {
             position: fixed;
             top: 0;
@@ -123,7 +124,7 @@
             width: 100%;
             height: 100%;
             background-color: var(--bg-deep);
-            z-index: 50;
+            z-index: 100;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -131,353 +132,290 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.4s ease;
+            text-align: center;
+            padding: 40px;
         }
+
         .overlay.visible {
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* --- Specific Overlay Styles --- */
-        
-        /* 1. Timer / Crisis */
-        .timer-huge {
-            font-family: var(--font-tech);
+        /* Timer UI */
+        .timer-display {
+            font-family: var(--font-eng);
             font-size: 15vw;
-            line-height: 1;
             font-weight: 300;
-            margin: 20px 0;
+            line-height: 1;
+            margin: 2rem 0;
+            font-variant-numeric: tabular-nums;
         }
-        
-        .checklist {
-            list-style: none;
-            padding: 0;
+
+        .quote-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--fg-dim);
+            letter-spacing: 1px;
+            max-width: 80%;
+            margin-bottom: 20px;
+        }
+
+        /* Checklists */
+        .checklist-container {
             text-align: left;
             margin-bottom: 30px;
-            opacity: 0.7;
+            color: var(--fg-champagne);
+            font-size: 1rem;
+            line-height: 2;
         }
-        .checklist li {
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-        }
-        .checklist li::before {
-            content: ">>";
-            color: var(--fg-dim);
+        .checklist-item::before {
+            content: "□ ";
+            opacity: 0.5;
             margin-right: 10px;
-            font-family: var(--font-tech);
         }
 
-        /* 2. Input / Value */
-        input[type="text"], input[type="number"] {
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--fg-main);
-            color: var(--accent);
-            font-size: 1.5rem;
-            text-align: center;
-            width: 80%;
-            max-width: 300px;
-            padding: 10px;
-            font-family: var(--font-ui);
-            letter-spacing: 2px;
-            border-radius: 0;
-        }
-        .input-hint {
-            margin-top: 15px;
-            font-size: 0.8rem;
-            color: var(--fg-dim);
-        }
-
-        /* 3. Button */
-        .btn-action {
-            margin-top: 40px;
-            padding: 12px 30px;
-            background: transparent;
+        /* Buttons */
+        .btn-ghost {
+            margin-top: 30px;
+            padding: 12px 36px;
             border: 1px solid var(--fg-dim);
-            color: var(--fg-main);
-            font-family: var(--font-tech);
+            color: var(--fg-dim);
+            background: transparent;
+            font-size: 0.8rem;
             letter-spacing: 2px;
             cursor: pointer;
+            border-radius: 50px; /* More organic shape for lifestyle */
             transition: all 0.3s;
         }
-        .btn-action:active {
-            background: var(--fg-main);
-            color: var(--bg-deep);
+        .btn-ghost:hover, .btn-ghost:active {
+            border-color: var(--fg-champagne);
+            color: var(--fg-champagne);
         }
 
-        /* 4. Shutdown */
-        #overlay-shutdown {
-            background: #000;
-        }
-        .shutdown-msg {
-            font-size: 0.9rem;
-            letter-spacing: 3px;
-            color: #444;
-            opacity: 0;
-            animation: fadeIn 3s forwards 1s; /* Slow fade in */
-        }
-        #btn-shutdown-exit {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 1s ease;
-            margin-top: 60px;
-            border-color: #333;
-            color: #333;
-        }
-
-        /* Z-Mode Highlight */
-        #btn-zmode {
-            border: 1.5px solid rgba(212, 212, 210, 0.4);
-        }
-
-        /* Navigation */
+        /* Nav Return */
         .nav-return {
             position: absolute;
             bottom: 30px;
             font-size: 0.8rem;
             color: var(--fg-dim);
-            letter-spacing: 2px;
             cursor: pointer;
-            padding: 10px;
+            letter-spacing: 2px;
+            opacity: 0.7;
         }
+
+        /* Rot Mode Specifics */
+        #overlay-rot {
+            background-color: #0d1017; /* Slightly darker */
+        }
+        .rot-msg {
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            line-height: 2;
+            opacity: 0.8;
+        }
+
     </style>
 </head>
 <body>
 
-<div id="viewport">
-
-    <!-- LAYER 1: COMMAND CENTER -->
-    <div id="layer-main" class="layer active">
-        <!-- TL: Smoke -->
-        <div class="cell" onclick="core.startSimpleTimer(300, 'NICOTINE PURGE')">
-            <div class="label-main">菸癮阻斷</div>
-            <div class="label-sub">COOLDOWN 5M</div>
-        </div>
-        <!-- TR: Anger -->
-        <div class="cell" onclick="core.startSimpleTimer(90, 'BREATH CONTROL')">
-            <div class="label-main">怒氣降溫</div>
-            <div class="label-sub">RESET 90S</div>
-        </div>
-        <!-- BL: Focus -->
-        <div class="cell" onclick="core.startSimpleTimer(2700, 'DEEP WORK')">
-            <div class="label-main">深度專注</div>
-            <div class="label-sub">SESSION 45M</div>
-        </div>
-        <!-- BR: Z-Mode -->
-        <div id="btn-zmode" class="cell" onclick="core.switchLayer('layer-filter')">
-            <div class="label-main">z-mode</div>
-            <div class="label-sub">思緒過濾</div>
-        </div>
-    </div>
-
-    <!-- LAYER 2: THOUGHT FILTER -->
-    <div id="layer-filter" class="layer">
-        <!-- Q1: Crisis -->
-        <div class="cell" onclick="modules.initCrisis()">
-            <div class="label-main">危機處置</div>
-            <div class="label-sub">CRITICAL / 90s</div>
-        </div>
-        <!-- Q2: Value -->
-        <div class="cell" onclick="modules.initValue()">
-            <div class="label-main">價值深耕</div>
-            <div class="label-sub">DEFINE TASK</div>
-        </div>
-        <!-- Q3: Interrupt -->
-        <div class="cell" onclick="modules.initInterrupt()">
-            <div class="label-main">阻斷干擾</div>
-            <div class="label-sub">VERIFY & BLOCK</div>
-        </div>
-        <!-- Q4: Waste -->
-        <div class="cell" onclick="modules.initWaste()">
-            <div class="label-main">終止虛耗</div>
-            <div class="label-sub">BLACKOUT</div>
-        </div>
+    <div id="app">
         
-        <div class="nav-return" style="left: 50%; transform: translateX(-50%);" onclick="core.switchLayer('layer-main')">
-            [ 返回主指揮頁 ]
+        <!-- LAYER 1: COMMAND -->
+        <div id="layer-main" class="layer active fade-enter">
+            <!-- TL -->
+            <div class="cell" onclick="hud.startTimer(300, 'NICOTINE PURGE', '深呼吸，尼古丁不是你的朋友。')">
+                <div class="txt-title">菸癮阻斷</div>
+                <div class="txt-sub">DETOX 5:00</div>
+            </div>
+            <!-- TR -->
+            <div class="cell" onclick="hud.startTimer(90, 'ANGER RESET', '現在生氣，等等看起來會很蠢。')">
+                <div class="txt-title">怒氣降溫</div>
+                <div class="txt-sub">BREATHE 90s</div>
+            </div>
+            <!-- BL -->
+            <div class="cell" onclick="hud.startTimer(2700, 'FLOW STATE', '這個世界可以等你 45 分鐘。')">
+                <div class="txt-title">深度專注</div>
+                <div class="txt-sub">FOCUS 45:00</div>
+            </div>
+            <!-- BR: Z-Mode Entry -->
+            <div id="btn-zmode" class="cell" onclick="hud.switchLayer('layer-lifestyle')">
+                <div class="txt-title">z-mode</div>
+                <div class="txt-sub">生活接管</div>
+            </div>
         </div>
+
+        <!-- LAYER 2: LIFESTYLE TAKEOVER -->
+        <div id="layer-lifestyle" class="layer">
+            <!-- TL: Logistics -->
+            <div class="cell" onclick="hud.modeLogistics()">
+                <div class="txt-title">後勤・代辦</div>
+                <div class="txt-sub">LOGISTICS</div>
+            </div>
+            <!-- TR: Rituals -->
+            <div class="cell" onclick="hud.modeRitual()">
+                <div class="txt-title">生活・儀式</div>
+                <div class="txt-sub">RITUALS</div>
+            </div>
+            <!-- BL: Noise Block -->
+            <div class="cell" onclick="hud.startTimer(600, 'NOISE BLOCK', '把腦袋裡的聲音關小一點。')">
+                <div class="txt-title">雜念・屏蔽</div>
+                <div class="txt-sub">BUFFER 10:00</div>
+            </div>
+            <!-- BR: Rot Mode -->
+            <div class="cell" onclick="hud.modeRot()">
+                <div class="txt-title">徹底・開擺</div>
+                <div class="txt-sub">LET IT GO</div>
+            </div>
+
+            <div class="nav-return" style="left: 50%; transform: translateX(-50%);" onclick="hud.switchLayer('layer-main')">
+                ← 返回主控台
+            </div>
+        </div>
+
     </div>
 
-</div>
+    <!-- === OVERLAYS === -->
 
-<!-- === OVERLAYS === -->
+    <!-- 1. Universal Timer Overlay -->
+    <div id="overlay-timer" class="overlay">
+        <div class="txt-sub" id="timer-label">PROCESSING</div>
+        <div class="timer-display" id="timer-val">00:00</div>
+        <div class="quote-text" id="timer-quote">...</div>
+        <button class="btn-ghost" onclick="hud.stopTimer()">我知道了，解除。</button>
+    </div>
 
-<!-- 1. Generic/Simple Timer -->
-<div id="overlay-timer" class="overlay">
-    <div class="label-sub" id="timer-label">PROCESSING</div>
-    <div class="timer-huge" id="timer-display">00:00</div>
-    <button class="btn-action" onclick="core.stopTimer()">解除鎖定</button>
-</div>
+    <!-- 2. Logistics Overlay -->
+    <div id="overlay-logistics" class="overlay">
+        <div class="txt-title" style="margin-bottom: 30px;">快速後勤檢查 (90s)</div>
+        <div class="checklist-container">
+            <div class="checklist-item">機票 / 票券 確認</div>
+            <div class="checklist-item">行程 / 會議 對接</div>
+            <div class="checklist-item">帳單 / 轉帳 清算</div>
+        </div>
+        <div class="timer-display" id="logistics-timer" style="font-size: 3rem;">01:30</div>
+        <button class="btn-ghost" onclick="hud.stopLogistics()">檢查完畢</button>
+    </div>
 
-<!-- 2. Crisis Mode (Checklist) -->
-<div id="overlay-crisis" class="overlay">
-    <ul class="checklist">
-        <li>停止所有動作 (Freeze)</li>
-        <li>抽離情緒自我 (Detach)</li>
-        <li>評估最壞後果 (Assess)</li>
-        <li>執行最小可行解 (Execute)</li>
-    </ul>
-    <div class="timer-huge" id="crisis-display" style="font-size: 10vw;">01:30</div>
-    <div class="label-sub">TACTICAL BREATHING ACTIVE</div>
-    <button class="btn-action" onclick="modules.stopCrisis()">狀態解除</button>
-</div>
+    <!-- 3. Ritual Selection Overlay -->
+    <div id="overlay-ritual-select" class="overlay">
+        <div class="txt-title" style="margin-bottom: 40px;">選擇你的儀式感</div>
+        
+        <button class="btn-ghost" style="margin: 10px; width: 200px;" 
+            onclick="hud.startTimer(300, 'MICRO WORKOUT', '不流汗也沒關係，肚子大點也挺好。')">
+            微運動 (5 min)
+        </button>
+        
+        <button class="btn-ghost" style="margin: 10px; width: 200px;" 
+            onclick="hud.startTimer(2700, 'DESIGN NOTES', '沒靈感就隨便畫個圓圈。')">
+            設計筆記 (45 min)
+        </button>
 
-<!-- 3. Value Mode (Input & Task) -->
-<div id="overlay-input" class="overlay">
-    <div class="label-main" style="margin-bottom: 30px;">定義當前唯一任務</div>
-    <input type="text" id="task-input" placeholder="例如：撰寫架構書" autocomplete="off">
-    <button class="btn-action" onclick="modules.startValueTimer()">確認並鎖定</button>
-</div>
+        <button class="btn-ghost" style="margin: 10px; width: 200px;" 
+            onclick="hud.startTimer(1800, 'COOKING', '記得加鹽，別燒廚房。')">
+            下廚時光 (30 min)
+        </button>
 
-<div id="overlay-value-run" class="overlay">
-    <div class="label-sub">CURRENT OBJECTIVE</div>
-    <div class="label-main" id="task-display-text" style="font-size: 1.5rem; margin: 20px 0; color: var(--accent);">...</div>
-    <div class="timer-huge" id="value-timer-display">45:00</div>
-    <button class="btn-action" onclick="modules.stopValueTimer()">任務完成</button>
-</div>
+        <div class="nav-return" onclick="hud.closeOverlay('overlay-ritual-select')">取消</div>
+    </div>
 
-<!-- 4. Interrupt Mode (Captcha) -->
-<div id="overlay-captcha" class="overlay">
-    <div class="label-sub">INTERRUPTION PROTOCOL</div>
-    <div class="label-main" style="margin: 20px 0;">輸入驗證碼以進入冷卻</div>
-    <div style="font-family: var(--font-tech); font-size: 2rem; letter-spacing: 5px; margin-bottom: 20px;" id="captcha-code">8888</div>
-    <input type="number" id="captcha-input" placeholder="----" style="width: 120px;">
-    <div class="input-hint" id="captcha-msg">驗證失敗將無法進入</div>
-    <button class="btn-action" onclick="modules.checkCaptcha()">驗證</button>
-    <div class="nav-return" onclick="core.closeOverlay('overlay-captcha')">取消</div>
-</div>
+    <!-- 4. Rot (Relax) Mode -->
+    <div id="overlay-rot" class="overlay" onclick="hud.closeOverlay('overlay-rot')">
+        <div class="rot-msg">人生不必隨時都在進步，</div>
+        <div class="rot-msg" style="margin-bottom: 40px;">安心廢吧。</div>
+        <div class="txt-sub" style="opacity: 0.3;">TAP TO WAKE UP</div>
+    </div>
 
-<!-- 5. Waste Mode (Blackout) -->
-<div id="overlay-shutdown" class="overlay">
-    <div class="shutdown-msg">虛耗終止 // 系統深度靜默中</div>
-    <div class="shutdown-msg" style="font-size: 0.7rem; margin-top: 10px; animation-delay: 2s;">WAIT FOR 3 MINUTES</div>
-    <button id="btn-shutdown-exit" class="btn-action" onclick="modules.stopWaste()">強制重啟</button>
-</div>
+    <script>
+        const hud = {
+            state: {
+                timerInterval: null,
+            },
 
-<script>
-    const core = {
-        timerId: null,
+            // --- Navigation ---
+            switchLayer: function(targetId) {
+                document.querySelectorAll('.layer').forEach(el => {
+                    el.classList.remove('active', 'fade-enter');
+                });
+                
+                const target = document.getElementById(targetId);
+                target.classList.add('active', 'fade-enter');
+            },
 
-        switchLayer: function(targetId) {
-            document.querySelectorAll('.layer').forEach(l => l.classList.remove('active'));
-            document.getElementById(targetId).classList.add('active');
-        },
+            closeOverlay: function(id) {
+                document.getElementById(id).classList.remove('visible');
+            },
 
-        startSimpleTimer: function(seconds, label) {
-            document.getElementById('timer-label').innerText = label;
-            this.openOverlay('overlay-timer');
-            this.runTimerLogic(seconds, 'timer-display', () => this.stopTimer());
-        },
+            // --- Core Timer Logic ---
+            startTimer: function(seconds, label, quote) {
+                // If coming from ritual selection, close it first
+                this.closeOverlay('overlay-ritual-select');
 
-        stopTimer: function() {
-            clearInterval(this.timerId);
-            this.closeOverlay('overlay-timer');
-        },
+                const overlay = document.getElementById('overlay-timer');
+                const display = document.getElementById('timer-val');
+                
+                document.getElementById('timer-label').innerText = label;
+                document.getElementById('timer-quote').innerText = quote || "Keep moving forward.";
+                
+                overlay.classList.add('visible');
+                
+                this.runTimer(seconds, display);
+            },
 
-        runTimerLogic: function(seconds, displayId, onFinish) {
-            if (this.timerId) clearInterval(this.timerId);
+            stopTimer: function() {
+                clearInterval(this.state.timerInterval);
+                this.closeOverlay('overlay-timer');
+            },
+
+            runTimer: function(duration, displayEl, callback) {
+                if (this.state.timerInterval) clearInterval(this.state.timerInterval);
+                
+                let timer = duration;
+                
+                const update = () => {
+                    const m = Math.floor(timer / 60).toString().padStart(2, '0');
+                    const s = (timer % 60).toString().padStart(2, '0');
+                    displayEl.innerText = `${m}:${s}`;
+                };
+
+                update();
+
+                this.state.timerInterval = setInterval(() => {
+                    timer--;
+                    if (timer < 0) {
+                        clearInterval(this.state.timerInterval);
+                        if (callback) callback();
+                    } else {
+                        update();
+                    }
+                }, 1000);
+            },
+
+            // --- Specific Modes ---
+
+            modeLogistics: function() {
+                const overlay = document.getElementById('overlay-logistics');
+                const display = document.getElementById('logistics-timer');
+                overlay.classList.add('visible');
+                this.runTimer(90, display, () => {
+                    // Timeout logic could go here
+                });
+            },
             
-            const display = document.getElementById(displayId);
-            
-            const render = (s) => {
-                const m = Math.floor(s / 60).toString().padStart(2, '0');
-                const sc = (s % 60).toString().padStart(2, '0');
-                display.innerText = `${m}:${sc}`;
-            };
-            
-            render(seconds);
-            
-            this.timerId = setInterval(() => {
-                seconds--;
-                if (seconds < 0) {
-                    clearInterval(this.timerId);
-                    if(onFinish) onFinish();
-                } else {
-                    render(seconds);
-                }
-            }, 1000);
-        },
+            stopLogistics: function() {
+                clearInterval(this.state.timerInterval);
+                this.closeOverlay('overlay-logistics');
+            },
 
-        openOverlay: function(id) {
-            document.getElementById(id).classList.add('visible');
-        },
+            modeRitual: function() {
+                const overlay = document.getElementById('overlay-ritual-select');
+                overlay.classList.add('visible');
+            },
 
-        closeOverlay: function(id) {
-            document.getElementById(id).classList.remove('visible');
-        }
-    };
-
-    const modules = {
-        // --- Crisis ---
-        initCrisis: function() {
-            core.openOverlay('overlay-crisis');
-            core.runTimerLogic(90, 'crisis-display', null);
-        },
-        stopCrisis: function() {
-            clearInterval(core.timerId);
-            core.closeOverlay('overlay-crisis');
-        },
-
-        // --- Value (Deep Work) ---
-        initValue: function() {
-            document.getElementById('task-input').value = '';
-            core.openOverlay('overlay-input');
-            document.getElementById('task-input').focus();
-        },
-        startValueTimer: function() {
-            const task = document.getElementById('task-input').value;
-            if (!task) return;
-            
-            core.closeOverlay('overlay-input');
-            document.getElementById('task-display-text').innerText = task;
-            core.openOverlay('overlay-value-run');
-            core.runTimerLogic(2700, 'value-timer-display', () => alert('Session Complete')); // 45m
-        },
-        stopValueTimer: function() {
-            clearInterval(core.timerId);
-            core.closeOverlay('overlay-value-run');
-        },
-
-        // --- Interrupt (Captcha) ---
-        targetCode: '',
-        initInterrupt: function() {
-            this.targetCode = Math.floor(1000 + Math.random() * 9000).toString();
-            document.getElementById('captcha-code').innerText = this.targetCode;
-            document.getElementById('captcha-input').value = '';
-            document.getElementById('captcha-msg').innerText = '輸入上方代碼以確認';
-            core.openOverlay('overlay-captcha');
-        },
-        checkCaptcha: function() {
-            const input = document.getElementById('captcha-input').value;
-            if (input === this.targetCode) {
-                core.closeOverlay('overlay-captcha');
-                // Start a "Black Screen" timer for 10 mins, reusing generic timer for simplicity or custom
-                core.startSimpleTimer(600, 'INTERRUPT BLOCK'); 
-            } else {
-                document.getElementById('captcha-msg').innerText = '錯誤，請重試';
-                document.getElementById('captcha-msg').style.color = '#aa5555';
+            modeRot: function() {
+                const overlay = document.getElementById('overlay-rot');
+                overlay.classList.add('visible');
             }
-        },
-
-        // --- Waste (Shutdown) ---
-        initWaste: function() {
-            core.openOverlay('overlay-shutdown');
-            const btn = document.getElementById('btn-shutdown-exit');
-            btn.style.opacity = '0';
-            btn.style.pointerEvents = 'none';
-
-            // 3 Minutes Lockout
-            setTimeout(() => {
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
-            }, 180000); // 180,000 ms = 3 minutes
-        },
-        stopWaste: function() {
-            core.closeOverlay('overlay-shutdown');
-        }
-    };
-</script>
+        };
+    </script>
 </body>
 </html>
