@@ -1,22 +1,29 @@
-<!-- zero-mode_v2.0.html -->
+<!-- zero-mode_v3.0.html -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZERO-MODE v2.0 // DECISION CORE</title>
+    <title>ZERO-MODE v3.0 // ARCHITECT BUILD</title>
+    
+    <!-- Preload Fonts for Premium Feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400&family=Jura:wght@300;400&display=swap" rel="stylesheet">
+
     <style>
         :root {
             /* Palette */
             --bg-deep: #121620;
             --fg-champagne: #D4D4D2;
-            --border-dim: rgba(212, 212, 210, 0.1);
-            --border-active: rgba(212, 212, 210, 0.5);
-            --accent-alert: #FF5C5C;
+            --fg-dim: rgba(212, 212, 210, 0.4);
+            --border-std: 1px solid rgba(212, 212, 210, 0.15);
+            --border-highlight: 1px solid rgba(212, 212, 210, 0.5);
+            --glow: 0 0 20px rgba(212, 212, 210, 0.08);
             
             /* Typography */
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-            --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            --font-main: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            --font-eng: "Jura", "Segoe UI", sans-serif; /* Tech/Minimalist English font */
         }
 
         * {
@@ -24,123 +31,94 @@
             user-select: none;
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
             width: 100%;
             height: 100%;
             background-color: var(--bg-deep);
             color: var(--fg-champagne);
             font-family: var(--font-main);
-            overflow: hidden; /* Strict no-scroll */
+            font-weight: 300;
+            overflow: hidden; /* No scrollbars allowed */
         }
 
         /* --- Transitions --- */
-        .fade-enter {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        .fade-out { animation: fadeOut 0.3s ease forwards; }
         
-        .fade-exit {
-            animation: fadeOut 0.3s ease-in forwards;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.01); } }
 
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.02); } }
-
-        /* --- Layout Structures --- */
-        #app-root {
+        /* --- Layout: The Stage --- */
+        #stage {
             position: relative;
             width: 100vw;
             height: 100vh;
         }
 
-        .page-layer {
+        .layer {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--bg-deep);
             display: none; /* Hidden by default */
-            z-index: 10;
-        }
-
-        .page-layer.active {
-            display: grid; /* Grid is applied when active */
-        }
-
-        /* 2x2 Matrix Grid */
-        .matrix-grid {
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
-            width: 100%;
-            height: 100%;
         }
 
+        .layer.active {
+            display: grid;
+        }
+
+        /* --- Cells & Interaction --- */
         .cell {
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border: 1px solid var(--border-dim);
-            transition: all 0.2s ease;
+            border: var(--border-std);
             cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
         }
 
-        /* Smart Borders: Remove outer borders for clean look */
+        /* Clean Borders (2x2) */
         .cell:nth-child(1) { border-top: 0; border-left: 0; }
         .cell:nth-child(2) { border-top: 0; border-right: 0; }
         .cell:nth-child(3) { border-bottom: 0; border-left: 0; }
         .cell:nth-child(4) { border-bottom: 0; border-right: 0; }
 
-        /* Interaction feedback */
-        .cell.flash-active {
-            background-color: rgba(212, 212, 210, 0.05);
-            border-color: var(--border-active);
+        .cell:active, .cell.flash {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
-        /* Typography Styles */
-        .label-primary {
+        /* Special Styling: Z-Mode Button (Layer 1, Bottom Right) */
+        #btn-zmode {
+            border: 1.5px solid var(--fg-champagne);
+            box-shadow: var(--glow);
+            z-index: 5; /* Sit slightly above */
+        }
+
+        /* Typography */
+        .txt-main {
             font-size: 1.25rem;
-            font-weight: 300; /* Light */
-            letter-spacing: 2px;
-            margin-bottom: 8px;
+            letter-spacing: 0.15em;
+            margin-bottom: 12px;
+            text-align: center;
         }
 
-        .label-sub {
-            font-family: var(--font-mono);
-            font-size: 0.65rem;
-            opacity: 0.6;
-            letter-spacing: 1px;
+        .txt-sub {
+            font-family: var(--font-eng);
+            font-size: 0.7rem;
+            color: var(--fg-dim);
+            letter-spacing: 0.2em;
             text-transform: uppercase;
         }
-
-        /* Navigation Bar for Layer 2 */
-        .nav-bar {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-top: 1px solid var(--border-dim);
-            background: var(--bg-deep);
-            cursor: pointer;
-            z-index: 20;
-        }
-        
-        .nav-text {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            letter-spacing: 3px;
-            opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-        .nav-bar:active .nav-text { opacity: 1; color: #fff; }
 
         /* --- Overlays --- */
         .overlay {
@@ -160,126 +138,134 @@
             transition: opacity 0.5s ease;
         }
 
-        .overlay.active {
+        .overlay.visible {
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* Timer Specifics */
-        #timer-display {
-            font-family: var(--font-main);
-            font-size: 18vw; /* Massive but thin */
-            font-weight: 100;
+        /* Timer UI */
+        #timer-val {
+            font-family: var(--font-eng);
+            font-size: 18vw;
+            font-weight: 300;
             line-height: 1;
-            font-variant-numeric: tabular-nums;
             letter-spacing: -2px;
+            font-variant-numeric: tabular-nums;
         }
 
-        #timer-label {
-            margin-top: 20px;
-            font-family: var(--font-mono);
+        #timer-lbl {
+            margin-top: 2rem;
             font-size: 0.9rem;
-            letter-spacing: 4px;
-            color: var(--fg-champagne);
-            opacity: 0.5;
+            letter-spacing: 0.3em;
+            color: var(--fg-dim);
         }
 
-        .btn-override {
-            margin-top: 60px;
-            padding: 12px 24px;
-            border: 1px solid var(--border-dim);
-            color: var(--fg-champagne);
-            font-family: var(--font-mono);
+        .btn-cancel {
+            margin-top: 4rem;
+            padding: 10px 30px;
+            border: 1px solid var(--fg-dim);
+            color: var(--fg-dim);
+            background: transparent;
+            font-family: var(--font-eng);
             font-size: 0.75rem;
             letter-spacing: 2px;
-            background: transparent;
             cursor: pointer;
-            opacity: 0.4;
-            transition: opacity 0.3s, border-color 0.3s;
+            transition: all 0.3s;
+        }
+        .btn-cancel:active {
+            color: var(--fg-champagne);
+            border-color: var(--fg-champagne);
         }
 
-        .btn-override:active {
-            opacity: 1;
-            border-color: var(--accent-alert);
-            color: var(--accent-alert);
+        /* Breathing Animation for Crisis/Anger */
+        .breathe-mode #timer-val {
+            animation: breath-anim 4s infinite ease-in-out;
         }
 
-        /* Silence Mode */
-        #overlay-silence {
+        @keyframes breath-anim {
+            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Navigation Button (Layer 2) */
+        .nav-return {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to top, rgba(18,22,32,1), rgba(18,22,32,0));
+            z-index: 10;
+        }
+        .nav-btn {
+            font-size: 0.9rem;
+            color: var(--fg-dim);
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        /* Shutdown Mode */
+        #shutdown-screen {
             background-color: #000000;
         }
-        #silence-hint {
-            color: #333;
-            font-size: 0.8rem;
-            animation: breathe 4s infinite;
-        }
-        @keyframes breathe { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
-
-        /* Log Overlay */
-        .log-container {
-            width: 80%;
-            max-width: 400px;
-            text-align: center;
-        }
-        .stat-number { font-size: 4rem; font-weight: 200; }
-        .stat-desc { font-family: var(--font-mono); font-size: 0.8rem; opacity: 0.6; margin-bottom: 30px; }
-
     </style>
 </head>
 <body>
 
-    <div id="app-root">
+    <div id="stage">
         
-        <!-- Layer 1: Executive Dashboard -->
-        <div id="layer-home" class="page-layer matrix-grid active">
-            <!-- Top Left -->
-            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(300, 'NICOTINE_PURGE')">
-                <div class="label-primary">戒菸冷卻</div>
-                <div class="label-sub">PROTOCOL 5:00</div>
+        <!-- Layer 1: Main Command -->
+        <div id="layer-main" class="layer active fade-in">
+            <!-- TL -->
+            <div class="cell" onclick="engine.runTimer(300, 'NICOTINE_BLOCK', false)">
+                <div class="txt-main">菸癮阻斷</div>
+                <div class="txt-sub">Purge // 5m</div>
             </div>
-            <!-- Top Right -->
-            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(300, 'ANGER_DISSOLVE')">
-                <div class="label-primary">怒氣冷卻</div>
-                <div class="label-sub">CALIBRATE 5:00</div>
+            <!-- TR -->
+            <div class="cell" onclick="engine.runTimer(90, 'DE-ESCALATE', true)">
+                <div class="txt-main">怒氣降溫</div>
+                <div class="txt-sub">Breathe // 90s</div>
             </div>
-            <!-- Bottom Left -->
-            <div class="cell" onclick="core.triggerEffect(this); core.showLog()">
-                <div class="label-primary">數據紀錄</div>
-                <div class="label-sub">SYSTEM LOGS</div>
+            <!-- BL -->
+            <div class="cell" onclick="engine.runTimer(2700, 'DEEP_FOCUS', false)">
+                <div class="txt-main">深度專注</div>
+                <div class="txt-sub">Flow // 45m</div>
             </div>
-            <!-- Bottom Right: Switch to Decision Layer -->
-            <div class="cell" onclick="core.triggerEffect(this); core.switchLayer('layer-decision')">
-                <div class="label-primary">進入決策</div>
-                <div class="label-sub">EISENHOWER MATRIX</div>
+            <!-- BR: Z-Mode Trigger -->
+            <div class="cell" id="btn-zmode" onclick="engine.switchLayer('layer-filter')">
+                <div class="txt-main">z-mode</div>
+                <div class="txt-sub">思緒過濾</div>
             </div>
         </div>
 
-        <!-- Layer 2: Decision Matrix (Eisenhower) -->
-        <div id="layer-decision" class="page-layer matrix-grid">
-            <!-- Q1: Crisis (Important/Urgent) -->
-            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(90, 'CRISIS_MODE')">
-                <div class="label-primary">危機處置</div>
-                <div class="label-sub">IMMEDIATE / 90s</div>
+        <!-- Layer 2: Thought Filter -->
+        <div id="layer-filter" class="layer">
+            <!-- TL: Crisis -->
+            <div class="cell" onclick="engine.runTimer(90, 'CRISIS_MODE', true)">
+                <div class="txt-main">危機處置</div>
+                <div class="txt-sub">Urgent // Breathe</div>
             </div>
-            <!-- Q2: Value (Important/Not Urgent) -->
-            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(2700, 'DEEP_WORK')">
-                <div class="label-primary">價值深耕</div>
-                <div class="label-sub">FOCUS / 45m</div>
+            <!-- TR: Value -->
+            <div class="cell" onclick="engine.runTimer(2700, 'VALUE_WORK', false)">
+                <div class="txt-main">價值深耕</div>
+                <div class="txt-sub">Important // 45m</div>
             </div>
-            <!-- Q3: Interruption (Not Important/Urgent) -->
-            <div class="cell" onclick="core.triggerEffect(this); core.startTimer(600, 'BLOCK_NOISE')">
-                <div class="label-primary">阻斷干擾</div>
-                <div class="label-sub">BUFFER / 10m</div>
+            <!-- BL: Interrupt -->
+            <div class="cell" onclick="engine.runTimer(600, 'BLOCK_NOISE', false)">
+                <div class="txt-main">阻斷干擾</div>
+                <div class="txt-sub">Buffer // 10m</div>
             </div>
-            <!-- Q4: Waste (Not Important/Not Urgent) -->
-            <div class="cell" onclick="core.triggerEffect(this); core.startSilence()">
-                <div class="label-primary">終止虛耗</div>
-                <div class="label-sub">SHUTDOWN</div>
+            <!-- BR: Waste -->
+            <div class="cell" onclick="engine.shutdown()">
+                <div class="txt-main">終止虛耗</div>
+                <div class="txt-sub">Shutdown</div>
             </div>
 
-            <!-- Return Nav (Overlapping bottom) -->
-            <div class="nav-bar" onclick="core.switchLayer('layer-home')">
-                <div class="nav-text">< 返回主控台</div>
+            <!-- Return Nav -->
+            <div class="nav-return">
+                <div class="nav-btn" onclick="engine.switchLayer('layer-main')">× 返回主指揮頁</div>
             </div>
         </div>
 
@@ -287,116 +273,100 @@
 
     <!-- Timer Overlay -->
     <div id="overlay-timer" class="overlay">
-        <div id="timer-display">00:00</div>
-        <div id="timer-label">MODE ACTIVE</div>
-        <button class="btn-override" onclick="core.stopTimer()">EMERGENCY OVERRIDE</button>
+        <div id="timer-val">00:00</div>
+        <div id="timer-lbl">PROCESSING</div>
+        <button class="btn-cancel" onclick="engine.stopTimer()">EMERGENCY STOP</button>
     </div>
 
-    <!-- Silence Overlay -->
-    <div id="overlay-silence" class="overlay" onclick="core.stopSilence()">
-        <div id="silence-hint">System Suspended...</div>
-    </div>
-
-    <!-- Log Overlay -->
-    <div id="overlay-log" class="overlay" onclick="core.hideLog()">
-        <div class="log-container">
-            <div class="stat-number" id="log-count">0</div>
-            <div class="stat-desc">SESSION ACTIONS TODAY</div>
-            <div class="label-sub">[ TAP TO DISMISS ]</div>
-        </div>
+    <!-- Shutdown Overlay -->
+    <div id="overlay-shutdown" class="overlay" id="shutdown-screen" onclick="engine.wakeUp()">
+        <div style="font-size: 0.8rem; opacity: 0.3; letter-spacing: 2px;">SYSTEM SUSPENDED</div>
     </div>
 
     <script>
-        const core = {
-            data: {
-                timerInterval: null,
-                actionCount: 0
+        const engine = {
+            state: {
+                timer: null,
+                activeLayer: 'layer-main'
             },
 
-            // --- UX Interactions ---
-            triggerEffect: function(el) {
-                el.classList.add('flash-active');
-                setTimeout(() => el.classList.remove('flash-active'), 150);
-                this.data.actionCount++;
-            },
-
+            // --- Navigation Logic ---
             switchLayer: function(targetId) {
-                const active = document.querySelector('.page-layer.active');
+                const current = document.getElementById(this.state.activeLayer);
                 const target = document.getElementById(targetId);
+                
+                // Visual Flash on button click happens via CSS :active usually, 
+                // but we can enforce a quick class if triggered programmatically or for effect
+                this.triggerFlash();
 
-                if (active) {
-                    active.classList.add('fade-exit');
-                    setTimeout(() => {
-                        active.classList.remove('active', 'fade-exit');
-                        // Clean up style to ensure display toggle works
-                        active.style.display = ''; 
-                    }, 300);
+                // Fade Out Current
+                current.classList.remove('fade-in');
+                current.classList.add('fade-out');
+
+                setTimeout(() => {
+                    current.classList.remove('active', 'fade-out');
+                    
+                    // Fade In Target
+                    target.classList.add('active', 'fade-in');
+                    this.state.activeLayer = targetId;
+                }, 300);
+            },
+
+            triggerFlash: function() {
+                // Minimal JS flash if needed, but CSS :active covers most tactile feel
+                // This is a placeholder for sound effects or haptics if PWA
+            },
+
+            // --- Timer Core ---
+            runTimer: function(seconds, label, breatheMode) {
+                const overlay = document.getElementById('overlay-timer');
+                const valDisplay = document.getElementById('timer-val');
+                const lblDisplay = document.getElementById('timer-lbl');
+
+                lblDisplay.textContent = label;
+                overlay.classList.add('visible');
+                
+                if (breatheMode) {
+                    overlay.classList.add('breathe-mode');
+                } else {
+                    overlay.classList.remove('breathe-mode');
                 }
 
-                // Small delay to allow exit animation to start naturally
-                setTimeout(() => {
-                    target.classList.add('active', 'fade-enter');
-                    setTimeout(() => target.classList.remove('fade-enter'), 400);
-                }, 50);
-            },
+                let left = seconds;
+                this.renderTime(left);
 
-            // --- Timer Logic ---
-            startTimer: function(seconds, labelText) {
-                const overlay = document.getElementById('overlay-timer');
-                const display = document.getElementById('timer-display');
-                const label = document.getElementById('timer-label');
-                
-                label.innerText = labelText || 'PROCESSING';
-                overlay.classList.add('active');
-                
-                let remaining = seconds;
-                this.updateDisplay(remaining);
+                if (this.state.timer) clearInterval(this.state.timer);
 
-                if (this.data.timerInterval) clearInterval(this.data.timerInterval);
-
-                this.data.timerInterval = setInterval(() => {
-                    remaining--;
-                    if (remaining < 0) {
+                this.state.timer = setInterval(() => {
+                    left--;
+                    if (left < 0) {
                         this.stopTimer();
                     } else {
-                        this.updateDisplay(remaining);
+                        this.renderTime(left);
                     }
                 }, 1000);
             },
 
-            updateDisplay: function(sec) {
-                const display = document.getElementById('timer-display');
-                const m = Math.floor(sec / 60).toString().padStart(2, '0');
-                const s = (sec % 60).toString().padStart(2, '0');
-                
-                // If it's pure seconds (like 90s), and less than a minute, show seconds only?
-                // Request asked for standard logic, keeping MM:SS is safest for all durations.
-                display.innerText = `${m}:${s}`;
+            renderTime: function(s) {
+                const m = Math.floor(s / 60).toString().padStart(2, '0');
+                const sec = (s % 60).toString().padStart(2, '0');
+                document.getElementById('timer-val').textContent = `${m}:${sec}`;
             },
 
             stopTimer: function() {
-                clearInterval(this.data.timerInterval);
-                document.getElementById('overlay-timer').classList.remove('active');
+                clearInterval(this.state.timer);
+                document.getElementById('overlay-timer').classList.remove('visible');
             },
 
-            // --- Silence Mode ---
-            startSilence: function() {
-                this.data.actionCount++;
-                document.getElementById('overlay-silence').classList.add('active');
+            // --- Shutdown Logic ---
+            shutdown: function() {
+                const screen = document.getElementById('overlay-shutdown');
+                screen.style.backgroundColor = "#000000"; // Ensure total black
+                screen.classList.add('visible');
             },
 
-            stopSilence: function() {
-                document.getElementById('overlay-silence').classList.remove('active');
-            },
-
-            // --- Log Logic ---
-            showLog: function() {
-                document.getElementById('log-count').innerText = this.data.actionCount;
-                document.getElementById('overlay-log').classList.add('active');
-            },
-            
-            hideLog: function() {
-                document.getElementById('overlay-log').classList.remove('active');
+            wakeUp: function() {
+                document.getElementById('overlay-shutdown').classList.remove('visible');
             }
         };
     </script>
